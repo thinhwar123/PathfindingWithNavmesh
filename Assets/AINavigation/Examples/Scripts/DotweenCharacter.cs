@@ -2,50 +2,44 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
-namespace SimpleNavmesh
+
+
+namespace AINavigation
 {
-    [RequireComponent(typeof(NavMeshAgent))]
-    public class MultipleHandlingCharacter : MonoBehaviour
+    public class DotweenCharacter : MonoBehaviour
     {
-        [SerializeField] private NavMeshAgent m_NavMeshAgent;
+        private IPathfindingSystem m_PathfindingSystem;
+        [NavMeshMask]
+        [SerializeField] private int m_AreaMask;
+        [SerializeField] private float m_StopDistance;
+        [SerializeField] private float m_MovementSpeed;
+        [SerializeField] private float m_RotateSpeed;
+
         [SerializeField] private MeshRenderer m_Renderer;
         [SerializeField] private List<Color> m_ColorList;
         [SerializeField] private List<Vector3> m_PointList;
 
+        private void Awake()
+        {
+            m_PathfindingSystem = new DotweenSystem(this, m_AreaMask, m_MovementSpeed, m_RotateSpeed, m_StopDistance);
+        }
+
         void Update()
         {
-            if (IsFinishMoveOnNavemesh())
+            if (m_PathfindingSystem.IsFinishMove())
             {
                 m_PointList.Clear();
                 // SetDestination 4 times to test multiple handling
                 for (int i = 0; i < 4; i++)
                 {
                     m_PointList.Add(GetRandomPoint());
-                    m_NavMeshAgent.SetDestination(m_PointList[i]);
+                    m_PathfindingSystem.SetDestination(m_PointList[i]);
                 }
             }
 
             UpdateColorByDestination();
         }
-        /// <summary>
-        /// Defines whether characater is finish move
-        /// </summary>
-        /// <returns></returns>
-        public bool IsFinishMoveOnNavemesh()
-        {
-            
-            if (!m_NavMeshAgent.pathPending)
-            {
-                if (m_NavMeshAgent.remainingDistance <= m_NavMeshAgent.stoppingDistance)
-                {
-                    if (!m_NavMeshAgent.hasPath || m_NavMeshAgent.velocity.sqrMagnitude == 0f)
-                    {
-                        return true;
-                    }
-                }
-            }
-            return false;
-        }
+
         /// <summary>
         /// Return the random point on ground
         /// </summary>
@@ -62,7 +56,7 @@ namespace SimpleNavmesh
             int index = 0;
             for (int i = 1; i < m_PointList.Count; i++)
             {
-                if (Vector3.Distance(m_PointList[i], m_NavMeshAgent.destination) < Vector3.Distance(m_PointList[index], m_NavMeshAgent.destination))
+                if (Vector3.Distance(m_PointList[i], m_PathfindingSystem.GetDestination()) < Vector3.Distance(m_PointList[index], m_PathfindingSystem.GetDestination()))
                 {
                     index = i;
                 }
@@ -71,4 +65,3 @@ namespace SimpleNavmesh
         }
     }
 }
-

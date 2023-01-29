@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.UI;
 
-namespace SimpleNavmesh
+namespace AINavigation
 {
     public class CharacterSpawner : MonoBehaviour
     {
